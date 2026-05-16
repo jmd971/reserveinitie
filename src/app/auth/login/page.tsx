@@ -27,7 +27,12 @@ function LoginForm() {
     <div className="min-h-screen flex items-center justify-center px-8"
       style={{ background: 'var(--noir)' }}>
       <div className="w-full max-w-md text-center">
-        <p className="text-xs tracking-[8px] uppercase mb-8" style={{ color: 'var(--or)' }}>
+        {/* Logo */}
+        <div className="w-20 h-20 mx-auto mb-10">
+          <img src="/logo-premium.png" alt="La Réserve des Initiés"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        </div>
+        <p className="text-xs tracking-[8px] uppercase mb-4" style={{ color: 'var(--or)' }}>
           Espace Membres · La Réserve
         </p>
         <h1 className="serif text-4xl font-normal mb-4">Connexion</h1>

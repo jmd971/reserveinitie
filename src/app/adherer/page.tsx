@@ -86,7 +86,7 @@ function AdhererForm() {
       <div className="flex gap-0 mb-12">
         {[1, 2, 3].map(n => (
           <div key={n} className="flex-1 text-center">
-            <div className="w-10 h-10 rounded-full border flex items-center justify-center mx-auto mb-2 serif text-lg"
+            <div className="w-10 h-10 border flex items-center justify-center mx-auto mb-2 serif text-lg"
               style={{
                 borderColor: step >= n ? 'var(--or)' : 'rgba(201,169,97,0.2)',
                 color: step >= n ? 'var(--or)' : 'var(--gris)',
@@ -215,9 +215,14 @@ function AdhererForm() {
 
 export default function AdhererPage() {
   return (
-    <div className="min-h-screen px-8 py-32" style={{ background: 'var(--noir)' }}>
+    <div className="min-h-screen px-8 py-24" style={{ background: 'var(--noir)' }}>
       <div className="max-w-xl mx-auto">
         <div className="text-center mb-16">
+          {/* Logo */}
+          <div className="w-24 h-24 mx-auto mb-8">
+            <img src="/logo-premium.png" alt="La Réserve des Initiés"
+              style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+          </div>
           <p className="text-xs tracking-[8px] uppercase mb-4" style={{ color: 'var(--or)' }}>
             Adhésion · La Réserve des Initiés
           </p>

@@ -16,6 +16,13 @@ export default function BoutiqueClient({ produits, profile }: Props) {
   const niveau = profile?.niveau || 'standard'
   const remise = NIVEAUX_CONFIG[niveau].remise
 
+  const nextNiveauKey = niveau === 'standard' ? 'gold' : niveau === 'gold' ? 'vip' : null
+  const nextNiveau = nextNiveauKey ? NIVEAUX_CONFIG[nextNiveauKey] : null
+  const pointsManquants = nextNiveau ? nextNiveau.min - (profile?.points || 0) : 0
+  const progressPct = nextNiveau
+    ? Math.min(100, Math.round((((profile?.points || 0) - NIVEAUX_CONFIG[niveau].min) / (nextNiveau.min - NIVEAUX_CONFIG[niveau].min)) * 100))
+    : 100
+
   function prixFinal(prix: number) {
     return remise > 0 ? prix * (1 - remise / 100) : prix
   }
@@ -68,12 +75,69 @@ export default function BoutiqueClient({ produits, profile }: Props) {
 
         {/* Champagnes */}
         <p className="text-xs tracking-[6px] uppercase mb-4" style={{ color: 'var(--or)' }}>Champagnes 24K</p>
-        <div className="grid grid-cols-4 gap-6 mb-16">
-          {champagnes.map(p => (
-            <ProductCard key={p.id} produit={p} prixFinal={prixFinal(p.prix)} remise={remise}
-              formatPrix={formatPrix} onClick={() => setSelected(p)} />
-          ))}
-        </div>
+
+        {/* Hero card — Emblème de la Maison (Anchoring) */}
+        {champagnes.length > 0 && (() => {
+          const embleme = champagnes[0]
+          return (
+            <div className="mb-8 border cursor-pointer relative overflow-hidden transition-all duration-500"
+              style={{ borderColor: 'rgba(201,169,97,0.35)', background: 'linear-gradient(135deg, rgba(25,18,5,1), rgba(10,10,10,1))' }}
+              onClick={() => setSelected(embleme)}
+              onMouseOver={e => (e.currentTarget.style.borderColor = 'rgba(201,169,97,0.7)')}
+              onMouseOut={e => (e.currentTarget.style.borderColor = 'rgba(201,169,97,0.35)')}>
+              {/* Corner badge */}
+              <div className="absolute top-0 left-0 px-5 py-2 text-xs tracking-[4px] uppercase"
+                style={{ background: 'linear-gradient(135deg, #C9A961, #9C7B3E)', color: 'var(--noir)' }}>
+                Emblème de la Maison
+              </div>
+              <div className="grid grid-cols-2 gap-0">
+                {/* Visual */}
+                <div className="flex items-center justify-center p-16"
+                  style={{ background: 'radial-gradient(ellipse 50% 60% at 50% 50%, rgba(50,37,10,1) 0%, transparent 70%)', minHeight: '280px' }}>
+                  <span className="serif" style={{ fontSize: '7rem', color: 'var(--or-fonce)', lineHeight: 1 }}>RI</span>
+                </div>
+                {/* Info */}
+                <div className="p-12 flex flex-col justify-center">
+                  <p className="text-xs tracking-[5px] uppercase mb-3" style={{ color: 'var(--or)' }}>
+                    {embleme.sous_titre}
+                  </p>
+                  <h2 className="serif text-4xl font-normal mb-4" style={{ color: 'var(--creme)' }}>{embleme.nom}</h2>
+                  <p className="text-sm leading-relaxed mb-8" style={{ color: 'var(--nacre)', maxWidth: '380px' }}>
+                    {embleme.description}
+                  </p>
+                  <div className="flex items-baseline gap-4">
+                    <span className="serif text-4xl" style={{ color: 'var(--or)' }}>
+                      {formatPrix(prixFinal(embleme.prix))}
+                    </span>
+                    {remise > 0 && (
+                      <span className="text-sm line-through" style={{ color: 'var(--gris)' }}>
+                        {formatPrix(embleme.prix)}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs mt-2 mb-8" style={{ color: 'var(--or)' }}>
+                    +{Math.floor(prixFinal(embleme.prix))} points fidélité · Livraison offerte
+                  </p>
+                  <div className="inline-flex">
+                    <span className="text-xs tracking-[4px] uppercase px-6 py-3 border transition-colors"
+                      style={{ borderColor: 'var(--or)', color: 'var(--or)' }}>
+                      Voir le détail →
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
+
+        {champagnes.slice(1).length > 0 && (
+          <div className="grid grid-cols-4 gap-6 mb-16">
+            {champagnes.slice(1).map(p => (
+              <ProductCard key={p.id} produit={p} prixFinal={prixFinal(p.prix)} remise={remise}
+                formatPrix={formatPrix} onClick={() => setSelected(p)} />
+            ))}
+          </div>
+        )}
 
         {/* Cognacs & Spiritueux */}
         {spiritueux.length > 0 && (
@@ -90,6 +154,45 @@ export default function BoutiqueClient({ produits, profile }: Props) {
               ))}
             </div>
           </>
+        )}
+
+        {/* Next-tier upsell banner (Goal-Gradient) */}
+        {nextNiveau && pointsManquants > 0 && (
+          <div className="mt-16 p-6 border relative overflow-hidden"
+            style={{ borderColor: 'rgba(201,169,97,0.3)', background: 'linear-gradient(135deg, rgba(20,15,3,1), rgba(10,10,10,1))' }}>
+            {/* subtle glow */}
+            <div className="absolute inset-0 pointer-events-none"
+              style={{ background: 'radial-gradient(ellipse 40% 60% at 0% 50%, rgba(201,169,97,0.06), transparent)' }} />
+            <div className="relative z-10 flex items-center justify-between gap-8">
+              <div className="flex-1">
+                <p className="text-xs tracking-[5px] uppercase mb-2" style={{ color: 'var(--or)' }}>
+                  Votre progression · Rang {nextNiveau.label}
+                </p>
+                <div className="h-px w-full mb-3" style={{ background: 'rgba(201,169,97,0.12)' }}>
+                  <div style={{
+                    height: '1px',
+                    width: `${progressPct}%`,
+                    background: 'linear-gradient(90deg, #9C7B3E, #E8C77E)',
+                    boxShadow: progressPct >= 70 ? '0 0 6px rgba(232,199,126,0.5)' : 'none',
+                    transition: 'width 1s ease',
+                  }} />
+                </div>
+                <p className="text-sm" style={{ color: 'var(--nacre)' }}>
+                  Il vous manque environ{' '}
+                  <strong style={{ color: 'var(--or)' }}>{pointsManquants.toLocaleString('fr-FR')} €</strong>
+                  {' '}d&apos;achats pour devenir{' '}
+                  <strong style={{ color: nextNiveau.couleur }}>{nextNiveau.label}</strong>
+                  {nextNiveau.remise > 0 && (
+                    <span style={{ color: 'var(--gris)' }}> · −{nextNiveau.remise}% sur toutes vos commandes</span>
+                  )}
+                </p>
+              </div>
+              <div className="text-right whitespace-nowrap">
+                <p className="serif text-3xl" style={{ color: 'var(--or)' }}>{progressPct}%</p>
+                <p className="text-xs tracking-[2px] uppercase" style={{ color: 'var(--gris)' }}>accompli</p>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
@@ -196,6 +299,9 @@ function ProductCard({ produit, prixFinal, remise, formatPrix, onClick }: {
         {remise > 0 && (
           <p className="text-xs line-through mt-1" style={{ color: 'var(--gris)' }}>{formatPrix(produit.prix)}</p>
         )}
+        <p className="text-xs mt-1" style={{ color: 'var(--gris)' }}>
+          +{Math.floor(prixFinal)} pts fidélité
+        </p>
         <p className="text-xs mt-3" style={{ color: 'var(--gris)' }}>En savoir plus →</p>
       </div>
     </div>

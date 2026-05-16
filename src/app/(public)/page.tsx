@@ -3,37 +3,6 @@ import { createClient } from '@/lib/supabase/server'
 import type { Produit } from '@/types/database'
 import Link from 'next/link'
 
-const Logo = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="100%" height="100%">
-    <defs>
-      <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#E8C77E"/>
-        <stop offset="50%" stopColor="#C9A961"/>
-        <stop offset="100%" stopColor="#9C7B3E"/>
-      </linearGradient>
-    </defs>
-    <rect width="600" height="600" fill="#0A0A0A"/>
-    <circle cx="300" cy="300" r="240" fill="none" stroke="url(#g1)" strokeWidth="1.5"/>
-    <circle cx="300" cy="300" r="225" fill="none" stroke="url(#g1)" strokeWidth="0.7"/>
-    <path id="topArc" d="M 100 300 A 200 200 0 0 1 500 300" fill="none"/>
-    <text fontFamily="Georgia, serif" fontSize="22" fill="url(#g1)" letterSpacing="8">
-      <textPath href="#topArc" startOffset="50%" textAnchor="middle">LA RÉSERVE DES INITIÉS</textPath>
-    </text>
-    <path id="botArc" d="M 110 300 A 190 190 0 0 0 490 300" fill="none"/>
-    <text fontFamily="Georgia, serif" fontSize="14" fill="url(#g1)" letterSpacing="12">
-      <textPath href="#botArc" startOffset="50%" textAnchor="middle">EST. ANTILLES · MMXXVI</textPath>
-    </text>
-    <text x="100" y="306" fontFamily="Georgia, serif" fontSize="20" fill="url(#g1)" textAnchor="middle">✦</text>
-    <text x="500" y="306" fontFamily="Georgia, serif" fontSize="20" fill="url(#g1)" textAnchor="middle">✦</text>
-    <g transform="translate(300,300)">
-      <text x="-75" y="55" fontFamily="Cormorant Garamond, Georgia, serif" fontSize="220" fontWeight="500" fill="url(#g1)" textAnchor="middle">R</text>
-      <g transform="translate(0,-15)" fill="url(#g1)"><polygon points="0,-7 6,0 0,7 -6,0"/></g>
-      <text x="75" y="55" fontFamily="Cormorant Garamond, Georgia, serif" fontSize="220" fontWeight="500" fill="url(#g1)" textAnchor="middle">I</text>
-    </g>
-    <text x="300" y="575" fontFamily="Georgia, serif" fontSize="11" fill="url(#g1)" letterSpacing="10" textAnchor="middle">CERCLE PRIVÉ · ANTILLES</text>
-  </svg>
-)
-
 async function getProduits(): Promise<Produit[]> {
   const supabase = await createClient()
   const { data } = await supabase.from('produits').select('*').eq('actif', true).order('position')
@@ -45,17 +14,52 @@ export default async function HomePage() {
   const champagnes = produits.filter(p => p.categorie === 'champagne')
   const spiritueux = produits.filter(p => p.categorie !== 'champagne')
 
+  const avantages = [
+    {
+      svg: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2 L22 12 L12 22 L2 12 Z"/><path d="M12 6 L18 12 L12 18 L6 12 Z" opacity="0.4"/></svg>,
+      title: 'Soirées du Cercle',
+      text: 'Événements exclusifs réservés aux membres dans chaque territoire : dégustations privées, soirées de prestige, rencontres entre initiés.'
+    },
+    {
+      svg: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15.5 14"/></svg>,
+      title: 'Avant-Premières',
+      text: 'Accès prioritaire aux nouvelles cuvées et aux expressions hors catalogue, avant toute mise en vente publique.'
+    },
+    {
+      svg: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>,
+      title: 'Carte Virtuelle',
+      text: "Carte de membre nominative avec votre numéro d'initié, vos points et votre rang. Téléchargeable et présentable."
+    },
+    {
+      svg: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>,
+      title: 'Programme Fidélité',
+      text: "1€ d'achat = 1 point · Rang Gold dès 1 000 pts (−5%) · Rang VIP dès 5 000 pts (−10% + coffret offert)."
+    },
+    {
+      svg: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 17H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11a2 2 0 0 1 2 2v3"/><rect x="9" y="11" width="14" height="10" rx="2"/><line x1="12" y1="16" x2="12" y2="16" strokeWidth="2"/></svg>,
+      title: 'Livraison Offerte',
+      text: 'Livraison gratuite sur les cinq territoires des Antilles françaises. Conditionnement premium garanti.'
+    },
+    {
+      svg: <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+      title: 'Cooptation Active',
+      text: "Parrainez vos proches et gagnez 20 points à leur premier achat. Chaque initié que vous introduisez renforce le Cercle."
+    },
+  ]
+
   return (
     <>
       <Navbar />
 
       {/* ===== HERO ===== */}
-      <section className="min-h-screen flex flex-col items-center justify-center text-center px-8 pt-32 pb-16 relative"
+      <section className="min-h-screen flex flex-col items-center justify-center text-center px-8 pt-32 pb-16 relative hero-grain"
         style={{ background: 'radial-gradient(ellipse at center top, rgba(201,169,97,0.08) 0%, transparent 60%), var(--noir)' }}>
         <p className="text-xs tracking-[8px] uppercase mb-8" style={{ color: 'var(--or)' }}>
           Cercle Privé · Antilles · Sur Cooptation
         </p>
-        <div className="w-64 h-64 mb-6"><Logo /></div>
+        <div className="w-56 h-56 mb-6">
+          <img src="/logo-premium.png" alt="La Réserve des Initiés" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+        </div>
         <h1 className="serif text-5xl font-normal leading-tight mb-6">
           Des spiritueux d&apos;exception,<br />
           <em className="italic" style={{ color: 'var(--or-clair)' }}>partagés entre initiés.</em>
@@ -76,6 +80,9 @@ export default async function HomePage() {
             Découvrir le Cercle
           </Link>
         </div>
+        <p className="mt-10 text-xs tracking-[4px] uppercase" style={{ color: 'var(--gris)' }}>
+          Cercle en cours de formation · Antilles françaises · 2026
+        </p>
         <p className="absolute bottom-12 left-1/2 text-xs tracking-[4px] uppercase"
           style={{ color: 'var(--or)', transform: 'translateX(-50%)', animation: 'bounce 2.5s infinite' }}>
           ↓ Découvrir
@@ -83,7 +90,7 @@ export default async function HomePage() {
       </section>
 
       {/* ===== MANIFESTE ===== */}
-      <section className="py-32 px-8 text-center" style={{ background: 'var(--noir-doux)' }} id="manifeste">
+      <section className="py-32 px-8 text-center reveal" style={{ background: 'var(--noir-doux)' }} id="manifeste">
         <div className="max-w-4xl mx-auto">
           <p className="text-xs tracking-[8px] uppercase mb-6" style={{ color: 'var(--or)' }}>Notre Engagement</p>
           <h2 className="serif text-4xl font-normal mb-8 gold-text">Un Cercle, pas une boutique.</h2>
@@ -95,7 +102,7 @@ export default async function HomePage() {
       </section>
 
       {/* ===== LA MAISON ===== */}
-      <section className="py-32 px-8" style={{ background: 'var(--noir)' }} id="maison">
+      <section className="py-32 px-8 reveal" style={{ background: 'var(--noir)' }} id="maison">
         <div className="max-w-6xl mx-auto grid grid-cols-2 gap-20 items-center">
           <div>
             <p className="text-xs tracking-[8px] uppercase mb-6" style={{ color: 'var(--or)' }}>Maison Comte de Mazeray · Pure Gold 24K</p>
@@ -152,7 +159,7 @@ export default async function HomePage() {
       </section>
 
       {/* ===== LA COLLECTION ===== */}
-      <section className="py-32 px-8" style={{ background: 'var(--noir-doux)' }} id="collection">
+      <section className="py-32 px-8 reveal" style={{ background: 'var(--noir-doux)' }} id="collection">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <p className="text-xs tracking-[8px] uppercase mb-4" style={{ color: 'var(--or)' }}>Maison Comte de Mazeray · Pure Gold 24K</p>
@@ -204,8 +211,47 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ===== MEMBRES FONDATEURS ===== */}
+      <section className="py-24 px-8 reveal" style={{ background: '#0d0d0d', borderTop: '1px solid rgba(201,169,97,0.1)', borderBottom: '1px solid rgba(201,169,97,0.1)' }}>
+        <div className="max-w-5xl mx-auto grid grid-cols-2 gap-16 items-center">
+          <div>
+            <p className="text-xs tracking-[8px] uppercase mb-4" style={{ color: 'var(--or)' }}>Places limitées</p>
+            <h2 className="serif text-4xl font-normal mb-6">
+              Membres <em className="italic" style={{ color: 'var(--or-clair)' }}>Fondateurs</em>
+            </h2>
+            <p className="leading-loose mb-6" style={{ color: 'var(--nacre)' }}>
+              Les cinquante premiers membres cooptés dans chaque territoire obtiennent le statut <strong style={{ color: 'var(--or)' }}>Fondateur</strong> —
+              inscrit à vie sur leur carte, reconnu par l&apos;ensemble du Cercle.
+            </p>
+            <p className="leading-loose mb-10" style={{ color: 'var(--nacre)' }}>
+              Ce statut n&apos;est pas accessible par l&apos;argent, ni par le temps. Il appartient uniquement à ceux qui ont eu le discernement de rejoindre le Cercle à ses premières heures.
+            </p>
+            <Link href="/adherer"
+              className="inline-flex items-center px-10 py-4 text-xs tracking-[4px] uppercase transition-all duration-300"
+              style={{ background: 'linear-gradient(135deg, #C9A961, #9C7B3E)', color: 'var(--noir)' }}>
+              Vérifier les places disponibles
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { territoire: 'Guadeloupe', places: 'Ouvert', code: '971' },
+              { territoire: 'Martinique', places: 'Ouvert', code: '972' },
+              { territoire: 'Guyane', places: 'Ouvert', code: '973' },
+              { territoire: 'Saint-Martin', places: 'Ouvert', code: '978' },
+              { territoire: 'Saint-Barthélemy', places: 'Ouvert', code: '977' },
+            ].map(({ territoire, places, code }) => (
+              <div key={code} className="p-6 border text-center"
+                style={{ background: 'var(--noir)', borderColor: 'rgba(201,169,97,0.15)' }}>
+                <p className="text-xs tracking-[2px] uppercase mb-1" style={{ color: 'var(--gris)' }}>{territoire}</p>
+                <p className="text-xs tracking-[3px]" style={{ color: 'var(--or)' }}>{places}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* ===== L'ART DE LA SÉLECTION ===== */}
-      <section className="py-32 px-8" style={{ background: 'var(--noir)' }}>
+      <section className="py-32 px-8 reveal" style={{ background: 'var(--noir)' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-20">
             <p className="text-xs tracking-[8px] uppercase mb-4" style={{ color: 'var(--or)' }}>Notre Savoir-Faire</p>
@@ -229,14 +275,14 @@ export default async function HomePage() {
       </section>
 
       {/* ===== COOPTATION ===== */}
-      <section className="py-32 px-8 text-center" style={{ background: 'var(--noir-doux)' }} id="cooptation">
+      <section className="py-32 px-8 text-center reveal" style={{ background: 'var(--noir-doux)' }} id="cooptation">
         <div className="max-w-5xl mx-auto">
           <p className="text-xs tracking-[8px] uppercase mb-4" style={{ color: 'var(--or)' }}>Accès Exclusif</p>
           <h2 className="serif text-4xl font-normal mb-4">Rejoindre le Cercle</h2>
           <p className="mb-16" style={{ color: 'var(--nacre)' }}>
             La Réserve des Initiés n&apos;est pas ouverte au public. L&apos;accès se fait uniquement sur cooptation d&apos;un membre existant.
           </p>
-          <div className="grid grid-cols-4 gap-8 mb-16">
+          <div className="grid grid-cols-4 gap-8 mb-16 reveal-stagger">
             {[
               { n: '1', title: 'Cooptation', text: 'Un membre actif vous parraine et partage son lien d\'invitation personnel.' },
               { n: '2', title: 'Inscription', text: 'Vous complétez votre dossier et vérification d\'identité (KYC).' },
@@ -244,7 +290,7 @@ export default async function HomePage() {
               { n: '4', title: 'Bienvenue', text: 'Vous recevez votre carte virtuelle et accédez à la Boutique.' },
             ].map(({ n, title, text }) => (
               <div key={n} className="text-center">
-                <div className="w-16 h-16 rounded-full border flex items-center justify-center mx-auto mb-6 serif text-2xl"
+                <div className="w-14 h-14 border flex items-center justify-center mx-auto mb-6 serif text-2xl"
                   style={{ borderColor: 'var(--or)', color: 'var(--or)', background: 'var(--noir)' }}>
                   {n}
                 </div>
@@ -262,25 +308,18 @@ export default async function HomePage() {
       </section>
 
       {/* ===== AVANTAGES ===== */}
-      <section className="py-32 px-8" style={{ background: 'var(--noir)' }}>
+      <section className="py-32 px-8 reveal" style={{ background: 'var(--noir)' }}>
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="serif text-4xl font-normal gold-text">L&apos;expérience Initiés</h2>
           </div>
-          <div className="grid grid-cols-3 gap-8">
-            {[
-              { icon: '◈', title: 'Carte Virtuelle', text: 'Carte de membre personnalisée avec QR code, téléchargeable en PDF.' },
-              { icon: '✦', title: 'Programme Fidélité', text: '1€ = 1 point · Gold dès 1000 pts (−5%) · VIP dès 5000 pts (−10%)' },
-              { icon: '◆', title: 'Soirées du Cercle', text: 'Événements exclusifs réservés aux membres dans les territoires.' },
-              { icon: '◇', title: 'Cooptation Active', text: 'Parrainez vos proches et gagnez 20 points à leur premier achat.' },
-              { icon: '▲', title: 'Livraison Offerte', text: 'Livraison gratuite sur les 5 territoires des Antilles françaises.' },
-              { icon: '★', title: 'Confidentialité', text: 'Vos données restent en France/EU. Discrétion et sécurité garanties.' },
-            ].map(({ icon, title, text }) => (
+          <div className="grid grid-cols-3 gap-8 reveal-stagger">
+            {avantages.map(({ svg, title, text }) => (
               <div key={title} className="p-12 border text-center transition-all duration-500 hover:border-[var(--or)] hover:-translate-y-1"
                 style={{ background: 'var(--noir-doux)', borderColor: 'rgba(201,169,97,0.15)' }}>
-                <div className="w-16 h-16 rounded-full border flex items-center justify-center mx-auto mb-8 serif text-2xl"
-                  style={{ borderColor: 'var(--or)', color: 'var(--or)' }}>
-                  {icon}
+                <div className="w-16 h-16 border flex items-center justify-center mx-auto mb-8"
+                  style={{ borderColor: 'rgba(201,169,97,0.35)', color: 'var(--or)' }}>
+                  {svg}
                 </div>
                 <h3 className="serif text-2xl mb-4" style={{ color: 'var(--creme)' }}>{title}</h3>
                 <p className="text-sm leading-relaxed" style={{ color: 'var(--nacre)' }}>{text}</p>

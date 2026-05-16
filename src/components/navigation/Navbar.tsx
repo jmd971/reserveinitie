@@ -27,8 +27,9 @@ export default function Navbar() {
   const isActive = (href: string) => pathname.startsWith(href)
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-16 py-6"
-      style={{ background: 'rgba(10,10,10,0.9)', backdropFilter: 'blur(20px)', borderBottom: '1px solid rgba(201,169,97,0.15)' }}>
+    <nav data-scroll-nav
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-16 py-6"
+      style={{ borderBottom: '1px solid transparent' }}>
 
       <Link href="/" className="serif text-xl tracking-[4px] uppercase"
         style={{ color: 'var(--or)' }}>

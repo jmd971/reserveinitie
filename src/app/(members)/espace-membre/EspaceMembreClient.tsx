@@ -19,10 +19,14 @@ export default function EspaceMembreClient({ profile, commandes, pointsHistory, 
   if (!profile) return null
 
   const niveau = NIVEAUX_CONFIG[profile.niveau]
+  const numMembre = parseInt(profile.numero_membre?.split('-')[2] || '9999', 10)
+  const isFondateur = numMembre >= 1 && numMembre <= 50
   const nextNiveau = profile.niveau === 'standard' ? NIVEAUX_CONFIG.gold : profile.niveau === 'gold' ? NIVEAUX_CONFIG.vip : null
   const progressPct = nextNiveau
     ? Math.min(100, Math.round(((profile.points - niveau.min) / ((nextNiveau.min) - niveau.min)) * 100))
     : 100
+  const pointsManquants = nextNiveau ? nextNiveau.min - profile.points : 0
+  const eurosManquants = pointsManquants  // 1€ = 1 point
 
   async function envoyerInvitation(e: React.FormEvent) {
     e.preventDefault()
@@ -84,6 +88,12 @@ export default function EspaceMembreClient({ profile, commandes, pointsHistory, 
                 style={{ background: 'linear-gradient(135deg, #C9A961, #9C7B3E)', color: 'var(--noir)' }}>
                 {profile.niveau.toUpperCase()} · {niveau.remise > 0 ? `−${niveau.remise}%` : 'Standard'}
               </div>
+              {isFondateur && (
+                <div className="inline-flex items-center gap-2 mt-3 px-4 py-1.5 text-xs tracking-[4px] uppercase"
+                  style={{ border: '1px solid rgba(232,199,126,0.5)', color: '#E8C77E' }}>
+                  ◆ Membre Fondateur
+                </div>
+              )}
             </div>
             <div className="flex flex-col items-end justify-between">
               {/* QR Code simulé */}
@@ -101,21 +111,45 @@ export default function EspaceMembreClient({ profile, commandes, pointsHistory, 
           {/* Barre de progression */}
           {nextNiveau && (
             <div className="mt-8 relative z-10">
-              <div className="flex justify-between mb-2 text-xs" style={{ color: 'var(--gris)' }}>
-                <span>{niveau.label} ({niveau.min} pts)</span>
-                <span>{nextNiveau.label} ({nextNiveau.min} pts)</span>
+              {/* Label + percent */}
+              <div className="flex justify-between items-baseline mb-3">
+                <span className="text-xs tracking-[3px] uppercase" style={{ color: 'var(--gris)' }}>
+                  {niveau.label}
+                </span>
+                <span className="text-xs tracking-[2px] uppercase" style={{ color: 'var(--or)' }}>
+                  {nextNiveau.label} · {progressPct}%
+                </span>
               </div>
-              <div className="h-1" style={{ background: 'rgba(201,169,97,0.15)', borderRadius: '2px' }}>
-                <div className="h-1" style={{
+
+              {/* Progress bar */}
+              <div className="h-px relative" style={{ background: 'rgba(201,169,97,0.15)' }}>
+                <div style={{
+                  position: 'absolute', top: 0, left: 0,
+                  height: '1px',
                   width: `${progressPct}%`,
-                  background: 'linear-gradient(90deg, #9C7B3E, #E8C77E)',
-                  borderRadius: '2px',
-                  transition: 'width 1s ease',
+                  background: progressPct >= 80
+                    ? 'linear-gradient(90deg, #9C7B3E, #F5DC82, #E8C77E)'
+                    : 'linear-gradient(90deg, #9C7B3E, #E8C77E)',
+                  transition: 'width 1.2s ease',
+                  boxShadow: progressPct >= 80 ? '0 0 8px rgba(232,199,126,0.6)' : 'none',
                 }} />
               </div>
-              <p className="text-xs mt-2" style={{ color: 'var(--or)' }}>
-                {nextNiveau.min - profile.points} points pour atteindre {nextNiveau.label}
-              </p>
+
+              {/* Goal-Gradient message */}
+              <div className="mt-3 flex items-center justify-between">
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--nacre)' }}>
+                  Il vous manque{' '}
+                  <span style={{ color: 'var(--or)' }}>~{eurosManquants.toLocaleString('fr-FR')} €</span>
+                  {' '}d&apos;achats pour rejoindre{' '}
+                  <span style={{ color: nextNiveau.couleur, fontWeight: 600 }}>{nextNiveau.label}</span>
+                </p>
+                {progressPct >= 75 && (
+                  <span className="text-xs tracking-[2px] uppercase ml-4 whitespace-nowrap"
+                    style={{ color: 'var(--or-clair)' }}>
+                    ✦ Bientôt
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>
@@ -126,7 +160,9 @@ export default function EspaceMembreClient({ profile, commandes, pointsHistory, 
             { val: profile.points.toLocaleString('fr-FR'), label: 'Points', unit: 'pts' },
             { val: commandes.filter(c => c.statut === 'payee' || c.statut === 'livree').length, label: 'Commandes', unit: '' },
             { val: invitations.filter(i => i.statut === 'acceptee').length, label: 'Filleuls', unit: '' },
-            { val: niveau.remise > 0 ? `−${niveau.remise}%` : '0%', label: 'Avantage', unit: '' },
+            nextNiveau
+              ? { val: `~${eurosManquants.toLocaleString('fr-FR')} €`, label: `Pour rang ${nextNiveau.label}`, unit: '' }
+              : { val: `−${niveau.remise}%`, label: 'Avantage VIP', unit: '' },
           ].map(({ val, label, unit }) => (
             <div key={label} className="p-8 text-center border" style={{ background: 'var(--noir-doux)', borderColor: 'rgba(201,169,97,0.15)' }}>
               <div className="serif text-3xl mb-2" style={{ color: 'var(--or)' }}>{val}<span className="text-lg">{unit}</span></div>
@@ -174,7 +210,7 @@ export default function EspaceMembreClient({ profile, commandes, pointsHistory, 
             <div className="p-8 border" style={{ background: 'var(--noir-doux)', borderColor: 'rgba(201,169,97,0.15)' }}>
               <h3 className="text-xs tracking-[4px] uppercase mb-6" style={{ color: 'var(--or)' }}>Cooptation</h3>
               <p className="text-sm mb-4" style={{ color: 'var(--nacre)' }}>
-                Partagez votre lien de cooptation. Vous gagnez 20 points au premier achat de chaque filleul.
+                Chaque filleul que vous introduisez vous rapporte 20 points de fidélité. Parrainez 5 membres actifs et obtenez le statut Découvreur sur votre carte.
               </p>
               <div className="p-4 mb-4 text-xs" style={{ background: 'var(--noir)', border: '1px solid rgba(201,169,97,0.2)', color: 'var(--or)', wordBreak: 'break-all' }}>
                 {lienCooptation}
@@ -229,9 +265,34 @@ export default function EspaceMembreClient({ profile, commandes, pointsHistory, 
                     <p className="serif text-2xl mb-2" style={{ color: 'var(--creme)' }}>
                       {n.remise > 0 ? `−${n.remise}%` : 'Standard'}
                     </p>
-                    <p className="text-xs" style={{ color: 'var(--gris)' }}>
+                    <p className="text-xs mb-2" style={{ color: 'var(--gris)' }}>
                       {n.min.toLocaleString('fr-FR')} pts{n.max ? ` — ${n.max.toLocaleString('fr-FR')} pts` : '+'}
                     </p>
+                    {/* Experiential benefits */}
+                    <ul className="text-xs mt-3 space-y-1 text-left" style={{ color: 'var(--nacre)' }}>
+                      {key === 'standard' && (
+                        <>
+                          <li>· Accès boutique membres</li>
+                          <li>· Livraison offerte</li>
+                          <li>· Programme fidélité actif</li>
+                        </>
+                      )}
+                      {key === 'gold' && (
+                        <>
+                          <li style={{ color: 'var(--or)' }}>· −5% sur toute la boutique</li>
+                          <li>· Accès soirées du Cercle</li>
+                          <li>· Avant-premières nouvelles cuvées</li>
+                        </>
+                      )}
+                      {key === 'vip' && (
+                        <>
+                          <li style={{ color: 'var(--or)' }}>· −10% sur toute la boutique</li>
+                          <li>· Coffret dédié annuel offert</li>
+                          <li>· Soirées VIP privées</li>
+                          <li>· Accès aux cuvées hors catalogue</li>
+                        </>
+                      )}
+                    </ul>
                   </div>
                 ))}
               </div>
@@ -282,7 +343,7 @@ export default function EspaceMembreClient({ profile, commandes, pointsHistory, 
                       borderColor: i.statut === 'acceptee' ? 'rgba(201,169,97,0.4)' : 'rgba(107,107,107,0.3)'
                     }}>
                     {i.statut === 'acceptee' ? 'Acceptée' : i.statut === 'expiree' ? 'Expirée' : 'En attente'}
-                    {i.points_attribues && ' · +20 pts'}
+                    {i.points_attribues && ' · +20 pts · Découvreur'}
                   </span>
                 </div>
               ))}
