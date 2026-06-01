@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe/client'
+import { getStripeServer } from '@/lib/stripe/client'
 import { createClient } from '@/lib/supabase/server'
 import { NIVEAUX_CONFIG } from '@/types/database'
 
@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
     const prix_final = produit.prix * (1 - remise / 100) * quantite
     const points_gagnes = Math.floor(prix_final)
 
+    const stripe = getStripeServer()
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       mode: 'payment',
