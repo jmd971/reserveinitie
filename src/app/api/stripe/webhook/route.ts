@@ -6,6 +6,7 @@ import Stripe from 'stripe'
 export async function POST(req: NextRequest) {
   const body = await req.text()
   const sig = req.headers.get('stripe-signature')!
+  const stripe = getStripeServer()
 
   let event: Stripe.Event
   try {
@@ -16,7 +17,6 @@ export async function POST(req: NextRequest) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const session = event.data.object as any
     const meta = session.metadata!
 
@@ -46,4 +46,3 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ received: true })
 }
-
